@@ -3,29 +3,52 @@ import ProviderSelector from './components/ProviderSelector';
 import ConceptInput from './components/ConceptInput';
 import SlideList from './components/SlideList';
 import Whiteboard from './components/Whiteboard';
+import { generateExplanation } from './lib/driverRouter';
+import { convertToTldrawShapes } from './lib/shapeBuilder';
 
 function App() {
   const [provider, setProvider] = useState('openai');
   const [concept, setConcept] = useState('');
   
-  // State global mocké pour la Phase 1
   const [slides, setSlides] = useState([
-    { id: '1', title: 'Concept initial' }
+    { id: '1', title: 'Concept initial', definition: '', shapes: [] }
   ]);
   const [activeSlideId, setActiveSlideId] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleExplain = (concept, context) => {
-    console.log(`Explaining: ${concept} with provider: ${provider}`);
-    console.log(`Context: ${context}`);
-    // Mock loading state for UI
+  const activeSlide = slides.find(s => s.id === activeSlideId) || slides[0];
+
+  const handleExplain = async (conceptToExplain, contextText) => {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 1000);
+    try {
+      const response = await generateExplanation(provider, conceptToExplain, contextText);
+      
+      const slideData = response.slides ? response.slides[0] : response;
+      const tldrawShapes = convertToTldrawShapes(slideData.shapes || []);
+      
+      setSlides(prevSlides => prevSlides.map(slide => {
+        if (slide.id === activeSlideId) {
+          return {
+            ...slide,
+            title: slideData.title || conceptToExplain,
+            definition: response.definition || '',
+            shapes: tldrawShapes
+          };
+        }
+        return slide;
+      }));
+      setConcept('');
+    } catch (err) {
+      console.error(err);
+      alert("Erreur: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleNewSlide = () => {
     const newId = Date.now().toString();
-    setSlides([...slides, { id: newId, title: 'Nouveau concept' }]);
+    setSlides([...slides, { id: newId, title: 'Nouveau concept', definition: '', shapes: [] }]);
     setActiveSlideId(newId);
     setConcept('');
   };
@@ -52,7 +75,14 @@ function App() {
           </div>
         </header>
         
-        <Whiteboard activeSlideId={activeSlideId} />
+        <div style={{ position: 'relative', flex: 1 }}>
+          {activeSlide.definition && (
+            <div className="definition-panel">
+              <p>{activeSlide.definition}</p>
+            </div>
+          )}
+          <Whiteboard activeSlideId={activeSlideId} currentShapes={activeSlide.shapes} />
+        </div>
       </main>
     </div>
   );

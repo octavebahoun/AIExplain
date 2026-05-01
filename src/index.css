@@ -324,3 +324,20 @@ body, html {
 .tldraw-container {
   --color-panel-bg: var(--color-surface);
 }
+
+.definition-panel {
+  position: absolute;
+  top: var(--spacing-4);
+  left: var(--spacing-4);
+  background-color: rgba(21, 30, 50, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-md);
+  max-width: 400px;
+  z-index: 50;
+  box-shadow: var(--shadow-md);
+  color: var(--color-text-main);
+  line-height: 1.5;
+  font-size: 14px;
+}
