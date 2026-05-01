@@ -4,37 +4,44 @@ import '@tldraw/tldraw/tldraw.css';
 
 const EditorController = ({ currentShapes, snapshot, activeSlideId, onSnapshotUpdate }) => {
   const editor = useEditor();
+  const hasLoadedRef = React.useRef(false);
 
-  // Chargement du snapshot ou injection des formes IA
+  // Chargement initial du snapshot ou injection des formes IA
   useEffect(() => {
-    if (!editor) return;
+    if (!editor || hasLoadedRef.current) return;
     
     try {
       if (snapshot) {
         editor.loadSnapshot(snapshot);
+        hasLoadedRef.current = true;
       } else if (currentShapes && currentShapes.length > 0) {
-        // 1. Vider le canvas
+        // Vider le canvas au cas où (normalement inutile avec le changement de key)
         const allShapeIds = Array.from(editor.getCurrentPageShapeIds());
         if (allShapeIds.length > 0) {
           editor.deleteShapes(allShapeIds);
         }
         
-        // 2. Injecter les nouvelles formes
         editor.createShapes(currentShapes);
+        hasLoadedRef.current = true;
         
-        // 3. Centrer automatiquement
         setTimeout(() => {
           try {
             editor.zoomToFit({ animation: { duration: 300 } });
-          } catch (e) {
-            console.error("Erreur lors du zoom:", e);
-          }
+          } catch (e) {}
         }, 150);
       }
     } catch (e) {
-      console.error("Erreur lors de la manipulation du canvas:", e);
+      console.error("Erreur d'initialisation du canvas:", e);
     }
-  }, [editor, currentShapes, snapshot]); // On exécute ceci au montage avec le bon snapshot ou currentShapes
+  }, [editor, currentShapes, snapshot]);
+
+  // Si de nouvelles formes arrivent de l'IA (snapshot est reset à null par App.jsx)
+  // On force le rechargement
+  useEffect(() => {
+    if (snapshot === null && currentShapes && currentShapes.length > 0) {
+      hasLoadedRef.current = false;
+    }
+  }, [snapshot, currentShapes]);
 
   // Écoute des changements de l'utilisateur pour sauvegarder le snapshot
   useEffect(() => {
@@ -45,13 +52,16 @@ const EditorController = ({ currentShapes, snapshot, activeSlideId, onSnapshotUp
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         try {
-          const snap = editor.getSnapshot();
-          onSnapshotUpdate(activeSlideId, snap);
+          // On ne sauvegarde que si on a déjà fini le chargement initial
+          if (hasLoadedRef.current) {
+            const snap = editor.getSnapshot();
+            onSnapshotUpdate(activeSlideId, snap);
+          }
         } catch(e) {}
-      }, 500); // Sauvegarde après 500ms d'inactivité
+      }, 500);
     };
 
-    const cleanup = editor.store.listen(handleChange, { scope: 'document' });
+    const cleanup = editor.store.listen(handleChange, { scope: 'document', source: 'user' });
     
     return () => {
       cleanup();
@@ -61,6 +71,7 @@ const EditorController = ({ currentShapes, snapshot, activeSlideId, onSnapshotUp
 
   return null;
 };
+
 
 const Whiteboard = ({ activeSlideId, currentShapes, snapshot, onSnapshotUpdate }) => {
   return (

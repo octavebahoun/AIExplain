@@ -1,4 +1,6 @@
+// lib/drivers/openai.js
 import { buildSystemPrompt } from '../promptBuilder';
+import { WHITEBOARD_TOOL } from '../toolSchema.js';
 
 export const explainWithOpenAI = async (concept, context) => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -8,15 +10,16 @@ export const explainWithOpenAI = async (concept, context) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: buildSystemPrompt(context) },
         { role: "user", content: `Explique-moi : ${concept}` }
       ],
-      response_format: { type: "json_object" }
+      tools: [WHITEBOARD_TOOL],
+      tool_choice: { type: "function", function: { name: "create_visual_explanation" } }
     })
   });
 
@@ -26,5 +29,8 @@ export const explainWithOpenAI = async (concept, context) => {
   }
 
   const data = await response.json();
-  return JSON.parse(data.choices[0].message.content);
+  const toolCall = data.choices[0].message.tool_calls?.[0];
+  if (!toolCall) throw new Error("OpenAI n'a pas utilisé le tool");
+
+  return JSON.parse(toolCall.function.arguments);
 };

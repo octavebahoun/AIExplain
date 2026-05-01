@@ -1,4 +1,5 @@
 import { buildSystemPrompt } from '../promptBuilder';
+import { WHITEBOARD_TOOL } from '../toolSchema.js';
 
 export const explainWithOpenRouter = async (concept, context) => {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -18,7 +19,8 @@ export const explainWithOpenRouter = async (concept, context) => {
         { role: "system", content: buildSystemPrompt(context) },
         { role: "user", content: `Explique-moi : ${concept}` }
       ],
-      response_format: { type: "json_object" }
+      tools: [WHITEBOARD_TOOL],
+      tool_choice: { type: "function", function: { name: "create_visual_explanation" } }
     })
   });
 
@@ -28,13 +30,9 @@ export const explainWithOpenRouter = async (concept, context) => {
   }
 
   const data = await response.json();
-  let content = data.choices[0].message.content.trim();
+  const toolCall = data.choices[0].message.tool_calls?.[0];
 
-  if (content.startsWith('```json')) {
-    content = content.replace(/^```json\n?/, '').replace(/\n?```$/, '');
-  } else if (content.startsWith('```')) {
-    content = content.replace(/^```\n?/, '').replace(/\n?```$/, '');
-  }
+  if (!toolCall) throw new Error("Le modèle n'a pas utilisé le tool — essaie un autre modèle");
 
-  return JSON.parse(content);
+  return JSON.parse(toolCall.function.arguments);
 };
