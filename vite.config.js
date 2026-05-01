@@ -8,4 +8,14 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  optimizeDeps: {
+    exclude: ['@tldraw/tldraw']
+  },
+  worker: {
+    format: 'es'
+  }
 })
+
+
+
+
