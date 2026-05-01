@@ -14,12 +14,16 @@ const shapeSchema = {
                 y: { type: "number", minimum: 50, maximum: 450 },
                 w: { type: "number", minimum: 100, maximum: 300 },
                 h: { type: "number", minimum: 50, maximum: 150 },
+                color: { type: "string", enum: ["blue", "green", "red", "orange", "violet", "yellow"] },
+                fill: { type: "string", enum: ["none", "semi", "solid"] },
+                size: { type: "string", enum: ["s", "m", "l"] }
             },
         },
         {
             title: "Arrow",
             required: ["type", "from", "to"],
             properties: {
+                color: { type: "string", enum: ["blue", "green", "red", "orange", "violet", "yellow"] },
                 type: { type: "string", enum: ["arrow"] },
                 label: { type: "string", maxLength: 20 },
                 from: {
@@ -46,6 +50,7 @@ const shapeSchema = {
             properties: {
                 type: { type: "string", enum: ["text"] },
                 label: { type: "string", maxLength: 60 },
+                color: { type: "string", enum: ["blue", "green", "red", "orange", "violet", "yellow"] },
                 x: { type: "number", minimum: 50, maximum: 750 },
                 y: { type: "number", minimum: 50, maximum: 450 },
             },
