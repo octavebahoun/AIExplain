@@ -13,7 +13,7 @@ export const explainWithOpenRouter = async (concept, context) => {
       'X-Title': 'AI Whiteboard'
     },
     body: JSON.stringify({
-      model: "meta-llama/llama-3-70b-instruct",
+      model: "inclusionai/ling-2.6-1t:free",
       messages: [
         { role: "system", content: buildSystemPrompt(context) },
         { role: "user", content: `Explique-moi : ${concept}` }
@@ -29,12 +29,12 @@ export const explainWithOpenRouter = async (concept, context) => {
 
   const data = await response.json();
   let content = data.choices[0].message.content.trim();
-  
+
   if (content.startsWith('```json')) {
     content = content.replace(/^```json\n?/, '').replace(/\n?```$/, '');
   } else if (content.startsWith('```')) {
     content = content.replace(/^```\n?/, '').replace(/\n?```$/, '');
   }
-  
+
   return JSON.parse(content);
 };

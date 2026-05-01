@@ -1,4 +1,4 @@
-import { createShapeId } from '@tldraw/tldraw';
+import { createShapeId, toRichText } from '@tldraw/tldraw';
 
 export const convertToTldrawShapes = (jsonShapes) => {
   if (!jsonShapes || !Array.isArray(jsonShapes)) return [];
@@ -16,7 +16,7 @@ export const convertToTldrawShapes = (jsonShapes) => {
           w: shape.w || 100,
           h: shape.h || 100,
           geo: shape.geo === 'ellipse' ? 'ellipse' : 'rectangle',
-          text: shape.label || '',
+          richText: toRichText(shape.label || ''),
         }
       };
     }
@@ -31,8 +31,9 @@ export const convertToTldrawShapes = (jsonShapes) => {
         x: from.x,
         y: from.y,
         props: {
-          start: { type: 'point', x: 0, y: 0 },
-          end: { type: 'point', x: to.x - from.x, y: to.y - from.y },
+          start: { x: 0, y: 0 },
+          end: { x: to.x - from.x, y: to.y - from.y },
+          richText: toRichText(shape.label || ''),
         }
       };
     }
@@ -44,7 +45,7 @@ export const convertToTldrawShapes = (jsonShapes) => {
         x: shape.x || 0,
         y: shape.y || 0,
         props: {
-          text: shape.label || '',
+          richText: toRichText(shape.label || ''),
         }
       };
     }

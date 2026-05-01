@@ -11,7 +11,7 @@ export const explainWithGroq = async (concept, context) => {
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: "llama3-70b-8192", // Modèle rapide pour Groq
+      model: "meta-llama/llama-4-scout-17b-16e-instruct", // Modèle rapide pour Groq
       messages: [
         { role: "system", content: buildSystemPrompt(context) },
         { role: "user", content: `Explique-moi : ${concept}` }
