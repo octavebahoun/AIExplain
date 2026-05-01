@@ -1,17 +1,4 @@
 # Plan d'implémentation — AI Whiteboard
-
-lis d'abors les skills suivant a applique stritement sans detour dan sl'iplmentation du projet  , lit les skills present dans le dossier ~/.agents/skills !
-tu utilisera ceci dans ce projet
-3d-web-experience
-copywriting
-docker-expert
-frontend-design
-frontend-developer
-product-manager-toolkit
-ui-ux-pro-max
-web-artifacts-builder
-
-donc lis les et prepare toi a les respexter strictement ! 
 ## Phase 0 — Setup projet (30 min)
 
 - [ ] `npm install @tldraw/tldraw`
